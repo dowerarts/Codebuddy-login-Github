@@ -2,6 +2,8 @@
 
 Node.js automation script untuk melakukan login GitHub dan otorisasi OAuth ke CodeBuddy secara otomatis. Script ini dirancang untuk berjalan dengan proxy rotasi, User-Agent acak, dan delay antar akun guna mengurangi deteksi mekanisme keamanan.
 
+![Demo](gambar.jpg)
+
 ## Fitur Utama
 
 - **Login GitHub otomatis** dengan email, password, dan 2FA (TOTP/6 digit).

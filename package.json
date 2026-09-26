@@ -1,0 +1,31 @@
+{
+  "dependencies": {
+    "axios": "^1.16.1",
+    "https-proxy-agent": "^7.0.6",
+    "totp-generator": "^2.0.1"
+  },
+  "name": "github-login-automation",
+  "version": "1.0.0",
+  "description": "GitHub OAuth Login Automation - login GitHub dan otorisasi CodeBuddy secara otomatis dengan dukungan proxy rotasi, delay, dan 2FA.",
+  "main": "github-login.js",
+  "directories": {
+    "lib": "lib"
+  },
+  "scripts": {
+    "start": "node github-login.js",
+    "login": "node github-login.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "keywords": [
+    "github",
+    "oauth",
+    "codebuddy",
+    "automation",
+    "proxy"
+  ],
+  "author": "",
+  "license": "ISC"
+}

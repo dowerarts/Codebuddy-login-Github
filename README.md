@@ -16,12 +16,12 @@ Node.js automation script untuk melakukan login GitHub dan otorisasi OAuth ke Co
 
 ```
 .
-├── github-login.js          # Script utama
-├── codebuddy.txt            # Daftar akun (format: email|password|username|2fa)
-├── proxy.txt                # Daftar proxy HTTP(S) (satu per baris)
-├── device_tokens.txt        # (opsional) Daftar X-Device-Token
-├── bad_accounts.txt         # (auto-generated) Akun bermasalah
-└── sessions/                # (auto-generated) Cookie hasil login
+├── github-login.js                # Script utama
+├── configgithublogin.json         # Konfigurasi bot (dari example)
+├── configgithublogin.example.json # Contoh konfigurasi
+├── codebuddy.txt                  # Daftar akun (format: email|password|username|2fa)
+├── bad_accounts.txt               # (auto-generated) Akun bermasalah
+└── sessions/                      # (auto-generated) Cookie hasil login
 ```
 
 ## Persyaratan
@@ -51,29 +51,40 @@ Kolom:
 3. Username GitHub
 4. 2FA (opsional). Bisa berupa secret TOTP base32 atau kode 6 digit langsung.
 
-### `proxy.txt`
-
-```
-http://user:pass@host:port
-http://user:pass@gw.dataimpulse.com:823
-```
-
-Untuk proxy DataImpulse, script akan otomatis menambahkan `;sessid.<random>` pada username supaya setiap akun keluar dari IP/session berbeda.
-
 ### `device_tokens.txt` (opsional)
 
 Satu `X-Device-Token` CodeBuddy per baris. Jika tidak ada, script akan generate token fallback acak per akun. Token terbaik adalah yang diambil dari browser DevTools saat login manual.
 
-## Konfigurasi via Environment Variable
+## Konfigurasi via `configgithublogin.json`
 
-| Variable | Default | Keterangan |
+Salin example terlebih dahulu:
+
+```bash
+cp configgithublogin.example.json configgithublogin.json
+```
+
+Lalu edit `configgithublogin.json` sesuai kebutuhan:
+
+```json
+{
+    "concurrency": 1,
+    "delayMs": 15000,
+    "proxy": [
+        "http://user:pass@host:port",
+        "http://user:pass@gw.dataimpulse.com:823"
+    ]
+}
+```
+
+| Key | Default | Keterangan |
 |---|---|---|
-| `CONCURRENCY` | `1` | Jumlah akun yang diproses bersamaan (maks 10). |
-| `DELAY_MS` | `10000` | Jeda minimum antar akun (dalam ms). |
-| `PROXY` | dari `proxy.txt` | Proxy statis untuk semua akun. |
-| `USER_AGENT` | acak dari pool | User-Agent manual. |
-| `CB_DEVICE_TOKEN` | - | Device token manual CodeBuddy. |
-| `OCTO` | hardcoded | Nilai `_octo` cookie GitHub. |
+| `concurrency` | `1` | Jumlah akun yang diproses bersamaan (maks 10). |
+| `delayMs` | `10000` | Jeda minimum antar akun (dalam ms). |
+| `proxy` | - (wajib diisi) | Daftar proxy HTTP(S). Bisa string atau array. |
+
+Untuk proxy DataImpulse, script akan otomatis menambahkan `;sessid.<random>` pada username supaya setiap akun keluar dari IP/session berbeda.
+
+`userAgent`, `octo`, dan `cbDeviceToken` di-hardcode/randomize di dalam script. Environment variable `CONCURRENCY`, `DELAY_MS`, `PROXY`, `USER_AGENT`, `OCTO`, `CB_DEVICE_TOKEN` tetap dapat menimpa nilai di JSON.
 
 ## Cara Penggunaan
 
@@ -81,7 +92,7 @@ Satu `X-Device-Token` CodeBuddy per baris. Jika tidak ada, script akan generate 
 node github-login.js
 ```
 
-Atau dengan pengaturan khusus:
+Atau dengan pengaturan sementara lewat environment variable:
 
 ```bash
 CONCURRENCY=1 DELAY_MS=15000 node github-login.js
@@ -123,7 +134,7 @@ Log di terminal menampilkan status tiap step:
 
 | Masalah | Penyebab umum | Solusi |
 |---|---|---|
-| `407 Proxy Authentication Required` | Kredensial proxy salah / session tidak valid. | Cek `proxy.txt`, pastikan username & password benar. |
+| `407 Proxy Authentication Required` | Kredensial proxy salah / session tidak valid. | Cek `configgithublogin.json`, pastikan username & password proxy benar. |
 | `account-flagged` / `suspended` | Akun GitHub sudah di-flag atau di-suspend. | Ganti akun; akun tersebut dicatat di `bad_accounts.txt`. |
 | `access-restricted` / `security policy` | CodeBuddy/Tencent WAF mendeteksi pola otomatis. | Turunkan `CONCURRENCY`, naikkan `DELAY_MS`, ganti provider proxy, atau cooldown beberapa jam. |
 | `authenticity_token tidak ditemukan` | GitHub mengembalikan halaman challenge/error. | Cek proxy, UA, dan pastikan IP tidak di-ban. |
@@ -136,14 +147,13 @@ Log di terminal menampilkan status tiap step:
 
 ```gitignore
 codebuddy.txt
-proxy.txt
-device_tokens.txt
 bad_accounts.txt
 sessions/
-.env
+configgithublogin.json
 ```
 
 - Gunakan proxy yang valid dan jangan jalankan terlalu agresif supaya tidak melanggar kebijakan platform.
+- `configgithublogin.json` bersifat pribadi dan tidak perlu di-push ke GitHub.
 
 ## Disclaimer
 
